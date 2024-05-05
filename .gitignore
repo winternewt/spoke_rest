@@ -1,7 +1,7 @@
-data/results/*
-data/VectorDB/*
+data/**
 .gpt_config.env
 .idea
+cachegpt/**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
