@@ -256,9 +256,10 @@ def convert_ssr_to_node_hits(vectorstore, question):
 
 def retrieve_context(question, vectorstore, embedding_function):
     entities = disease_entity_extractor_v2(question)
+    relations = relations_similarity_extractor(question)
     if entities:
         context_window, node_hits = get_vector_similarity(vectorstore, entities)
-        return get_pruned_node_context(embedding_function, context_window, node_hits, question)
+        return get_pruned_node_context(embedding_function, context_window, node_hits, relations)
     else:
         context_window, node_hits = convert_ssr_to_node_hits(vectorstore, question)
         return get_pruned_node_context(embedding_function, context_window, node_hits, question)

@@ -3,7 +3,7 @@ from spoke import (get_GPT_response, disease_entity_extractor_v2, relations_simi
                    get_system_prompt, get_full_node_context, get_pruned_node_context, retrieve_context)
 
 CHAT_MODEL_ID = "gpt-3.5-turbo"
-INTERACTIVE = True
+INTERACTIVE = False
 embedding_function_for_context_retrieval = load_context_retrieval()
 vectorstore = load_chroma()
 
