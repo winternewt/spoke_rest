@@ -6,10 +6,11 @@ from typing import Optional
 from pydantic import BaseModel
 
 from spoke import (
-    retrieve_context, load_context_retrieval, load_chroma,
-    disease_entity_extractor_v2, relations_similarity_extractor, get_vector_similarity, convert_ssr_to_node_hits, get_full_node_context, get_pruned_node_context
+    retrieve_context, load_context_retrieval, load_chroma, get_system_prompt,
+    disease_entity_extractor_v2, relations_similarity_extractor, get_vector_similarity,
+    convert_ssr_to_node_hits, get_full_node_context, get_pruned_node_context, get_GPT_response
 )
-
+CHAT_MODEL_ID = "gpt-3.5-turbo"
 vectorstore = load_chroma()
 embedding_function_for_context_retrieval = load_context_retrieval()
 
@@ -36,7 +37,8 @@ def read_root():
     "/sample_questions",
     "/get_kg_disease_context/{nl_question}",
     "/get_kg_disease_context_info/{nl_question}",
-    "/get_kg_disease_context_debug/{nl_question}"]
+    "/get_kg_disease_context_debug/{nl_question}",
+    "/get_kg_based_response/{nl_question}"]
     }
 
 
@@ -58,6 +60,21 @@ async def get_kg_disease_context(question: str):
             return {"exception": False, "context": ""}
     except Exception as e:
         return {"exception": True, "context": "Error"}  # Returning an empty dictionary if any error occurs during context retrieval
+
+@kg_router.get("/get_kg_based_response/{question}", response_model=ResponseModel,
+               description="Returns KG-based response for the natural-language question about disease.")
+async def get_kg_based_response(question: str):
+    try:
+        context = retrieve_context(question, vectorstore, embedding_function_for_context_retrieval)
+        enriched_prompt = "Context: " + context + "\n" + "Question: " + question
+        output = get_GPT_response(enriched_prompt, get_system_prompt(), CHAT_MODEL_ID)
+        if output:
+            return {"exception": False, "context": output}
+        else:
+            return {"exception": False, "context": ""}
+    except Exception as e:
+        return {"exception": True, "context": "Error"}  # Returning an empty dictionary if any error occurs during context retrieval
+
 
 def get_kg_disease_context_verbose(question: str, debug: bool=False):
     try:
